@@ -171,7 +171,7 @@ module.exports.stats = {
     children: false
 };
 
-module.exports.performance = { hints: false};
+module.exports.performance = { hints: Mix.inProduction };
 
 
 
@@ -239,25 +239,11 @@ module.exports.plugins.push(
 );
 
 
-module.exports.plugins.push(
-    new webpack.LoaderOptionsPlugin({
-        minimize: Mix.inProduction,
-        options: {
-            postcss: [ 
-                require('autoprefixer')
-            ],
-            context: __dirname,
-            output: { path: './' }
-        }
-    })
-);
-
-
 if (Mix.versioning.enabled) {
     Mix.versioning.record();
 
     module.exports.plugins.push(
-        new plugins.WebpackOnBuildPlugin(stats => {
+        new plugins.WebpackOnBuildPlugin(() => {
             Mix.versioning.prune(Mix.publicPath);
         })
     );
@@ -266,7 +252,7 @@ if (Mix.versioning.enabled) {
 
 if (Mix.combine || Mix.minify) {
     module.exports.plugins.push(
-        new plugins.WebpackOnBuildPlugin(stats => {
+        new plugins.WebpackOnBuildPlugin(() => {
             Mix.concatenateAll().minifyAll();
         })
     );
@@ -312,6 +298,17 @@ if (Mix.inProduction) {
             sourceMap: true,
             compress: { 
                 warnings: false 
+            }
+        }),
+
+        new webpack.LoaderOptionsPlugin({
+            minimize: true,
+            options: {
+                postcss: [ 
+                    require('autoprefixer')
+                ],
+                context: __dirname,
+                output: { path: './' }
             }
         })
     ]);
