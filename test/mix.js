@@ -42,7 +42,7 @@ test('that it calculates the output correctly', t => {
 
     t.deepEqual({
         path: './public',
-        filename: 'dist/[name].js',
+        filename: 'dist/stub.js',
         publicPath: './'
     }, mix.config.output());
 
@@ -52,7 +52,7 @@ test('that it calculates the output correctly', t => {
 
     t.deepEqual({
         path: '/',
-        filename: 'dist/[name].js',
+        filename: 'dist/stub.js',
         publicPath: 'http://localhost:8080/'
     }, mix.config.output());
 
@@ -76,6 +76,20 @@ test('that it calculates the output correctly', t => {
         filename: 'dist/[name].[hash].js',
         publicPath: './'
     }, mix.config.output());
+});
+
+
+test('that it calculates the project root', t => {
+    // The project root should be three dirs up from where
+    // laravel-mix is installed.
+    let root = require('path').resolve(__dirname, '../../../');
+
+    t.is(root, mix.config.root());
+});
+
+
+test('that it calculates the webpack.mix path', t => {
+    t.is(mix.config.root('webpack.mix'), mix.config.configPath());
 });
 
 

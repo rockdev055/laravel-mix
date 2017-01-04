@@ -1,18 +1,16 @@
 let path = require('path');
-let paths = require('./Paths');
 let File = require('./File');
 let lodash = require('lodash');
 let Manifest = require('./Manifest');
 let Versioning = require('./Versioning');
 let concatenate = require('concatenate');
 
-class Mix {
+module.exports = new class {
     /**
      * Create a new Laravel Mix instance.
      */
     constructor() {
         this.File = File;
-        this.paths = paths;
         this.hmr = false;
         this.sourcemaps = false;
         this.notifications = true;
@@ -32,7 +30,7 @@ class Mix {
      */
     initialize() {
         // We'll first load the user's webpack.mix.js file.
-        require(this.paths.mix());
+        require(this.configPath());
 
         // Since the user might wish to override the default cache
         // path, we'll update these here with the latest values.
@@ -49,15 +47,13 @@ class Mix {
      * @param {object} webpackConfig
      */
     finalize(webpackConfig) {
-        if (! this.webpackConfig) return;
-
-        lodash.mergeWith(webpackConfig, this.webpackConfig,
-            (objValue, srcValue) => {
+        if (this.webpackConfig) {
+            lodash.mergeWith(webpackConfig, this.webpackConfig, (objValue, srcValue) => {
                 if (Array.isArray(objValue)) {
                     return objValue.concat(srcValue);
                 }
-            }
-        );
+            });
+        }
     }
 
 
@@ -65,16 +61,14 @@ class Mix {
      * Determine the Webpack entry file(s).
      */
     entry() {
-        // We'll build up an entry object that the webpack.config.js
-        // file will want to see. It'll include all mix.js() calls.
         let entry = this.js.reduce((result, paths) => {
             result[paths.output.name] = paths.entry.map(src => src.path);
 
             return result;
         }, {});
 
-        // If the user has requested CSS preprocessing, then
-        // we'll extract it into the very first entry point.
+        // If the user has requested CSS preprocessing,
+        // we'll extract it into the first entry point.
         if (this.cssPreprocessor) {
             entry[Object.keys(entry)[0]].push(
                 this[this.cssPreprocessor].src.path
@@ -89,7 +83,13 @@ class Mix {
      * Determine the Webpack output path.
      */
     output() {
-        let filename = this.versioning.enabled ? '[name].[hash].js' : '[name].js';
+        let filename;
+
+        if (this.js.vendor || this.js.length > 1) {
+            filename = this.versioning.enabled ? '[name].[hash].js' : '[name].js';
+        } else {
+            filename = this.js[0].output[this.versioning.enabled ? 'hashedFile' : 'file'];
+        }
 
         return {
             path: this.hmr ? '/' : this.publicPath,
@@ -170,7 +170,7 @@ class Mix {
      * Fetch the appropriate Babel config for babel-loader.
      */
     babelConfig() {
-        let file = this.paths.root('.babelrc');
+        let file = this.root('.babelrc');
 
         // If the user has defined their own .babelrc file,
         // the babel-loader will automatically fetch it.
@@ -185,11 +185,27 @@ class Mix {
 
 
     /**
+     * Determine the path to the user's webpack.mix.js file.
+     */
+    configPath() {
+        return this.root('webpack.mix');
+    }
+
+
+    /**
+     * Determine the project root.
+     *
+     * @param {string|null} append
+     */
+    root(append = '') {
+        return path.resolve(__dirname, '../../../', append);
+    }
+
+
+    /**
      * Determine if we are working with a Laravel project.
      */
     isUsingLaravel() {
         return this.File.exists('./artisan');
     }
 };
-
-module.exports = new Mix;
