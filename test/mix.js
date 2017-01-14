@@ -48,7 +48,7 @@ test('that it determines the CSS output path correctly.', t => {
        .js('js/stub.js', 'dist')
        .sass('sass/stub.scss', 'dist');
 
-    t.is('dist/stub.css', mix.config.cssOutput(mix.config.sass[0]));
+    t.is('dist/stub.css', mix.config.cssOutput());
 });
 
 
@@ -83,13 +83,12 @@ test('that it calculates the output correctly', t => {
     }, mix.config.output());
 
 
-    // Enabling file versioning should change this output.
+    // Enabling file versioning shoul dchange this output.
     mix.version();
-    mix.config.inProduction = true;
 
     t.deepEqual({
         path: './public',
-        filename: 'dist/[name].[chunkhash].js',
+        filename: 'dist/[name].[hash].js',
         publicPath: './'
     }, mix.config.output());
 });
