@@ -1,10 +1,10 @@
 let path = require('path');
-let mergeWith = require('lodash').mergeWith;
-let Paths = require('./Paths');
 let File = require('./File');
+let Paths = require('./Paths');
 let Manifest = require('./Manifest');
 let Versioning = require('./Versioning');
 let concatenate = require('concatenate');
+let mergeWith = require('lodash').mergeWith;
 
 class Mix {
     /**
@@ -17,7 +17,6 @@ class Mix {
         this.sourcemaps = false;
         this.notifications = true;
         this.cssPreprocessor = false;
-        this.versioning = false;
         this.inProduction = process.env.NODE_ENV === 'production';
         this.publicPath = './';
     }
@@ -35,11 +34,8 @@ class Mix {
         if (rootPath) this.Paths.setRootPath(rootPath);
         require(this.Paths.mix());
 
-        if (this.versioning) {
-            this.versioning = new Versioning(
-                new Manifest(this.publicPath + '/manifest.json')
-            )
-        }
+        this.manifest = new Manifest(this.publicPath + '/mix-manifest.json');
+        this.versioning = new Versioning(this.manifest);
 
         this.detectHotReloading();
     }
@@ -82,17 +78,11 @@ class Mix {
             return result;
         }, {});
 
-        // Allow us to have multiple .sass() or .less() calls with each
-        // chunk having it's own unique entry[chunk] name.
         if (this.cssPreprocessor) {
-            let stylesheets = this[this.cssPreprocessor].reduce((result, paths) => {
-                result[paths.output.name] = paths.src.path;
+            let stylesheets = this[this.cssPreprocessor].map(entry => entry.src.path);
+            let name = Object.keys(entry)[0];
 
-                return result;
-            }, {});
-            Object.keys(stylesheets).map(name => {
-                entry[name] = stylesheets[name];
-            });
+            entry[name] = entry[name].concat(stylesheets);
         }
 
         return entry;
