@@ -30,7 +30,7 @@ module.exports.js = (entry, output) => {
 
     if (output.isDir) {
         output = new Mix.File(
-            path.join(output.path, entry[0].file)
+            path.posix.join(output.path, entry[0].file)
         ).parsePath();
     }
 
@@ -48,27 +48,6 @@ module.exports.js = (entry, output) => {
  */
 module.exports.extract = (libs) => {
     Mix.js.vendor = libs;
-
-    return this;
-};
-
-
-/**
- * Register libraries to automatically "autoload" when
- * the appropriate variable is references in js
- *
- * @param {object} libs
- */
-module.exports.autoload = (libs) => {
-    let aliases = {};
-
-    Object.keys(libs).forEach(library => {
-        libs[library].forEach(alias => {
-            aliases[alias] = library;
-        });
-    });
-
-    Mix.js.autoload = aliases;
 
     return this;
 };
@@ -109,7 +88,7 @@ module.exports.preprocess = (type, src, output) => {
 
     if (output.isDir) {
         output = new Mix.File(
-            path.join(output.path, src.name + '.css')
+            path.posix.join(output.path, src.name + '.css')
         ).parsePath();
     }
 
