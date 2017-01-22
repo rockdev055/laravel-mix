@@ -36,6 +36,10 @@ mix.js('src/app.js', 'dist/')
    .js('src/forum.js', 'dist/');
 ```
 
+##### Important Note
+
+Please note that Laravel Mix requires you to perform some form of Javascript bundling. As such, at least one call to `mix.js` within your `webpack.mix.js` file is mandatory.
+
 ### Laravel Example
 
 Consider a typical Laravel install. By default, your JavaScript entry point will be located at `./resources/assets/js/app.js`. Let's prepare a `webpack.mix.js` file to compile that to `./public/js/app.js`.
@@ -107,4 +111,3 @@ mix.js('resources/assets/js/app.js', 'public/js');
 ```
 
 And that should do it! Run `node_modules/.bin/webpack` to compile it all down. At this point, simply create an HTML file, import your `./js/app.js` bundle, and load the browser. Tada!
-
