@@ -1,6 +1,5 @@
 import test from 'ava';
-import  * as mix from '../src/index';
-const Mix = mix.config;
+import { mix, config as Mix } from '../src/index';
 import path from 'path';
 import File from '../src/File';
 import sinon from 'sinon';
