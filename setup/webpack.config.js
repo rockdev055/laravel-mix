@@ -235,10 +235,11 @@ module.exports.devServer = {
  */
 
 module.exports.plugins = (module.exports.plugins || []).concat([
-    new webpack.ProvidePlugin({
+    new webpack.ProvidePlugin(Mix.js.autoload || {
         jQuery: 'jquery',
         $: 'jquery',
-        jquery: 'jquery'
+        jquery: 'jquery',
+        'window.jQuery': 'jquery'
     }),
 
     new plugins.FriendlyErrorsWebpackPlugin(),
