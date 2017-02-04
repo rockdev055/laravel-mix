@@ -42,20 +42,19 @@ class Mix {
         require(this.Paths.mix());
 
         this.manifest = new Manifest(
-            path.join(this.publicPath, 'mix-manifest.json'),
-            this.events
+            path.join(this.publicPath, 'mix-manifest.json')
         );
 
         if (this.versioning) {
             this.versioning = new Versioning(this.manifest).record();
 
-            this.events.listen('build', () => {
-                this.versioning.prune(this.publicPath);
-            });
+            this.events.listen(
+                'build', () => this.versioning.prune(this.publicPath)
+            );
         }
 
-        if (this.concat.combinations.length) {
-            this.concat.initialize({versioning: this.versioning});
+        if (this.concat.files.length) {
+            this.concat.watch();
         }
 
         this.detectHotReloading();

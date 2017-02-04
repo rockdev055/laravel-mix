@@ -111,15 +111,6 @@ class File {
             ext: outputSegments.ext
         };
     }
-
-    /**
-     * Rename a given file
-     * @param  {string} from
-     * @param  {string} to
-     */
-    static rename(from, to) {
-        fs.renameSync(from, to);
-    }
 }
 
 module.exports = File;
