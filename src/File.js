@@ -1,5 +1,6 @@
 let fs = require('fs');
 let path = require('path');
+let mkdirp = require('mkdirp');
 let uglify = require('uglify-js');
 let UglifyCss = require('clean-css');
 
@@ -22,6 +23,16 @@ class File {
      */
     static find(file) {
         return new File(file);
+    }
+
+
+    /**
+     * Make all nested directories in the current file path.
+     */
+    makeDirectories() {
+        mkdirp.sync(this.parsePath().base);
+
+        return this;
     }
 
 
@@ -67,6 +78,10 @@ class File {
      * @param {string} body
      */
     write(body) {
+        if (typeof body === 'object') {
+            body = JSON.stringify(body, null, 2);
+        }
+
         fs.writeFileSync(this.file, body);
 
         return this;
@@ -94,6 +109,16 @@ class File {
 
 
     /**
+     * Fetch a full, versioned path to the file.
+     *
+     * @param {string} hash
+     */
+    versionedPath(hash) {
+        return this.parsePath().hashedPath.replace('[hash]', hash);
+    }
+
+
+    /**
      * Parse the file path into segments.
      */
     parsePath() {
@@ -110,6 +135,19 @@ class File {
             isDir: ! outputSegments.ext,
             ext: outputSegments.ext
         };
+    }
+
+    /**
+     * Rename the file.
+     *
+     * @param {string} to
+     */
+    rename(to) {
+        fs.renameSync(this.file, to);
+
+        this.file = to;
+
+        return to;
     }
 }
 

@@ -1,7 +1,7 @@
+let md5 = require('md5');
+let File = require('./File');
 let chokidar = require('chokidar');
 let concatenate = require('concatenate');
-let File = require('./File');
-let mkdirp = require('mkdirp');
 
 class Concat {
     /**
@@ -10,57 +10,112 @@ class Concat {
      * @param {object} events
      */
     constructor(events) {
-        this.files = [];
+        this.events = events;
+        this.versioning = false;
+        this.combinations = [];
 
-        events.listen('build', this.run.bind(this));
+        this.events.listen('build', this.run.bind(this));
     }
 
 
     /**
-     * Add a set of files to be concatenated.
+     * Enable file versioning.
+     */
+    enableVersioning() {
+        this.versioning = true;
+    }
+
+
+    /**
+     * Add a set of files to be combined.
      *
      * @param {object} files
      */
     add(files) {
-        this.files = this.files.concat(files);
+        this.combinations.push({
+            src: files.src,
+            output: files.output,
+            outputOriginal: files.output
+        });
+
+        return this;
     }
 
 
     /**
      * Watch all relevant files for changes.
+     *
+     * @param {object|null} watcher
      */
-    watch() {
-        if (! process.argv.includes('--watch')) return;
+    watch(watcher) {
+        watcher = watcher || chokidar;
 
-        let watchers = [].concat.apply(
-            [], this.files.map(set => set.src)
-        );
+        if (! this.shouldWatch()) return;
 
-        chokidar.watch(watchers, {
-            persistent: true
-        }).on('change', this.run.bind(this));
+        this.combinations.forEach(combination => {
+            watcher.watch(combination.src, { persistent: true })
+                   .on('change', this.combine.bind(this, combination));
+        });
     }
 
 
     /**
-     * Combine the given files, or those from Mix.combine().
+     * Determine if file watching should be enabled.
      *
-     * @param {array|null} files
+     * @return {boolean}
+     */
+    shouldWatch() {
+        return this.any() && process.argv.includes('--watch');
+    }
+
+
+    /**
+     * Process combination.
+     *
+     * @param {object} files
+     */
+    combine(files) {
+        let output = File.find(files.output).makeDirectories();
+
+        let mergedFileContents = concatenate.sync(
+            files.src, files.output
+        );
+
+        // If file versioning is enabled, then we'll
+        // rename the output file to apply a hash.
+        if (this.versioning) {
+            files.output = output.rename(
+                File.find(files.outputOriginal)
+                    .versionedPath(md5(mergedFileContents))
+            );
+        }
+
+        if (process.env.NODE_ENV === 'production') {
+            new File(files.output).minify();
+        }
+
+        // We'll now fire an event, so that the Manifest class
+        // can be refreshed to reflect these new files.
+        this.events.fire('combined', files);
+    }
+
+    /**
+     * Perform all relevant combinations.
      */
     run() {
-        this.files.forEach(file => {
-            mkdirp.sync(
-                File.find(file.output).parsePath().base
-            );
-
-           concatenate.sync(file.src, file.output);
-
-            if (process.env.NODE_ENV === 'production') {
-                new File(file.output).minify();
-            }
-        });
+        this.combinations.forEach(files => this.combine(files));
 
         return this;
+    }
+
+
+    /**
+     * Determine if there are any files to concatenate.
+     *
+     * @return {boolean}
+     */
+    any() {
+        return this.combinations.length > 0;
     }
 }
 

@@ -1,6 +1,6 @@
 let File = require('./File');
-let objectValues = require('lodash').values;
 let Mix = require('./index');
+let objectValues = require('lodash').values;
 
 class Manifest {
     /**
@@ -10,6 +10,19 @@ class Manifest {
      */
     constructor(path) {
         this.path = path;
+        this.manifest = {};
+    }
+
+
+    /**
+     * Register any applicable event listeners.
+     *
+     * @param {object} events
+     */
+    listen(events) {
+        events.listen('combined', this.appendCombinedFiles.bind(this));
+
+        return this;
     }
 
 
@@ -17,20 +30,9 @@ class Manifest {
      * Transform the Webpack stats into the shape we need.
      *
      * @param {object} stats
+     * @param {object} options
      */
-    transform(stats) {
-        this.transformStats(stats)
-            .appendCombinedFiles(Mix.config.concat.files);
-
-        return JSON.stringify(this.manifest, null, 2);
-    }
-
-    /**
-     * Format the stats for the mix-manifest.json file.
-     *
-     * @param {object} stats
-     */
-    transformStats(stats) {
+    transform(stats, options) {
         let flattenedPaths = [].concat.apply(
             [], objectValues(stats.assetsByChunkName)
         );
@@ -45,27 +47,33 @@ class Manifest {
             return manifest;
         }, {});
 
-        return this;
+        return JSON.stringify(this.manifest, null, 2);
     }
+
 
     /**
      * Append any mix.combine()'d output paths to the manifest.
      *
      * @param {array} combine
      */
-    appendCombinedFiles(combine) {
-        // Even though calls to mix.combine() are not part of the
-        // core Webpack compilation, we'll add their output paths
-        // to the mix-manifest.json file, for user convenience.
-        if (combine) {
-            combine.forEach(toCombine => {
-                let output = toCombine.output
-                    .replace(/\\/g, '/')
-                    .replace(Mix.config.publicPath, '');
+    appendCombinedFiles(toCombine) {
+        let output = toCombine.output
+            .replace(/\\/g, '/')
+            .replace(Mix.config.publicPath, '');
 
-                this.manifest[output] = output;
-            });
-        }
+        this.manifest[
+            output.replace(/\.(\w{32})(\..+)/, '$2')
+        ] = output;
+
+        this.refresh();
+    }
+
+
+    /**
+     * Refresh the mix-manifest.js file.
+     */
+    refresh() {
+        File.find(this.path).write(this.manifest);
     }
 
 
