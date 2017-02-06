@@ -1,7 +1,6 @@
 docs/
 test/
 .nyc_output
-.idea
 coverage
 mix.sublime-project
 mix.sublime-workspace
