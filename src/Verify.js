@@ -5,8 +5,8 @@ class Verify {
     /**
      * Verify that the call the mix.js() is valid.
      *
-     * @param {mixed} entry
-     * @param {mixed} output
+     * @param {*} entry
+     * @param {*} output
      */
     static js(entry, output) {
         assert(
@@ -25,7 +25,7 @@ class Verify {
      * Verify that the calls the mix.sass() and mix.less() are valid.
      *
      * @param {string} type
-     * @param {string} entry
+     * @param {string} src
      * @param {string} output
      */
     static preprocessor(type, src, output) {
@@ -44,7 +44,7 @@ class Verify {
     /**
      * Verify that the call the mix.extract() is valid.
      *
-     * @param {array} entry
+     * @param {Array} libs
      */
     static extract(libs) {
         assert(
@@ -57,20 +57,13 @@ class Verify {
     /**
      * Verify that the call the mix.combine() is valid.
      *
-     * @param {array} src
+     * @param {Array} src
      */
     static combine(src) {
         assert(
             Array.isArray(src),
             'mix.combine() requires an array as its first parameter.'
         );
-
-        src.forEach(file => {
-            assert(
-                File.exists(file),
-                `Mix.combine() error: "${file} does not exist.`
-            );
-        });
     }
 }
 
