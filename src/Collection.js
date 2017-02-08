@@ -13,7 +13,7 @@ class Collection {
      * Add a new key-value pair to the collection.
      *
      * @param {string}       name
-     * @param {string|Array} files
+     * @param {string|array} files
      */
     add(name, files) {
         if (! this.items[name]) {
@@ -27,7 +27,7 @@ class Collection {
     /**
      * Get the underlying items for the collection.
      *
-     * @return {Array}
+     * @return {array}
      */
     get() {
         return this.items;

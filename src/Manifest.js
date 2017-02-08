@@ -86,7 +86,7 @@ class Manifest {
     /**
      * Append any mix.combine()'d output paths to the manifest.
      *
-     * @param {Array} toCombine
+     * @param {array} combine
      */
     appendCombinedFiles(toCombine) {
         let output = this.preparePath(toCombine.output);

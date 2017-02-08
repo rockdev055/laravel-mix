@@ -6,7 +6,7 @@ class Versioning {
     /**
      * Create a new Versioning instance.
      *
-     * @param {Array}  manualFiles
+     * @param {array}  manualFiles
      * @param {object} manifest
      * @param {string} publicPath
      */

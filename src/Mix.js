@@ -129,7 +129,7 @@ class Mix {
     /**
      * Detect if the user desires hot reloading.
      *
-     * @param {boolean} force
+     * @param {bool} force
      */
     detectHotReloading(force = false) {
         let file = new this.File(this.publicPath + '/hot');

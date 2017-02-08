@@ -5,8 +5,8 @@ class Verify {
     /**
      * Verify that the call the mix.js() is valid.
      *
-     * @param {*} entry
-     * @param {*} output
+     * @param {mixed} entry
+     * @param {mixed} output
      */
     static js(entry, output) {
         assert(
@@ -25,7 +25,7 @@ class Verify {
      * Verify that the calls the mix.sass() and mix.less() are valid.
      *
      * @param {string} type
-     * @param {string} src
+     * @param {string} entry
      * @param {string} output
      */
     static preprocessor(type, src, output) {
@@ -44,7 +44,7 @@ class Verify {
     /**
      * Verify that the call the mix.extract() is valid.
      *
-     * @param {Array} libs
+     * @param {array} entry
      */
     static extract(libs) {
         assert(
@@ -57,7 +57,7 @@ class Verify {
     /**
      * Verify that the call the mix.combine() is valid.
      *
-     * @param {Array} src
+     * @param {array} src
      */
     static combine(src) {
         assert(
